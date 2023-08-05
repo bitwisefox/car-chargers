@@ -64,11 +64,13 @@ def read_charger_data():
 
     csv_register = open(charger_register,"r")
     reader = csv.DictReader(csv_register)
+    charger_id = 0
 
     for row in reader:
         if row['town'].isalpha and (float(row['latitude']) > 50.0):
+            charger_id += 1
             # print(row['name'], row['town'],row['latitude'], row['longitude'])
-            chargers.append(Charger(reader.line_num, 
+            chargers.append(Charger(charger_id,
                                     row['name'],
                                     row['town'],
                                     row['latitude'], 
@@ -81,6 +83,7 @@ def read_charger_data():
             print("Invalid data:",row['name'], row['town'],row['latitude'], row['longitude'])
 
     csv_register.close()
+    print("Last id: " + str(charger_id))
 
  
 """
