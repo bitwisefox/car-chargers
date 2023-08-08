@@ -9,7 +9,7 @@ charger_register = "national-charge-point-registry.csv"
 A class defining the charger infomation we care about
 """
 class Charger:
-    def __init__(self, id, name, town, lat, long, postcode, inService, sub, parkFee):
+    def __init__(self, id, name, town, lat, long, postcode, inService, sub, parkFee, connType, power):
         self.id = id
         self.name = str(name)
         self.town = town
@@ -19,12 +19,14 @@ class Charger:
         self.inService = True if (0 == inService) else False
         self.sub = True if (0 == sub) else False
         self.parkFee = True if (0 == parkFee) else False
+        self.connType = connType
+        self.power = power
 
     def __str__(self):
         """
         Format class as an entry for the datebase table
         """
-        return f"(\"{self.id}\",\"{self.name}\",\"{self.town}\",{self.lat},{self.long},\"{self.pc}\",{self.inService},{self.sub},{self.parkFee})"
+        return f"(\"{self.id}\",\"{self.name}\",\"{self.town}\",{self.lat},{self.long},\"{self.pc}\",{self.inService},{self.sub},{self.parkFee},\"{self.connType}\",{self.power})"
 
 # The global list of chargers
 chargers = []
@@ -43,7 +45,7 @@ def create_database():
 
     cur = con.cursor()
 
-    cur.execute("CREATE TABLE charger(id,name,town,latitude,longitude,postcode,inService,subscriptionRequired,parkingFees)")
+    cur.execute("CREATE TABLE charger(id,name,town,latitude,longitude,postcode,inService,subscriptionRequired,parkingFees,connectorType,power)")
 
     for i in range(len(chargers)):
         # print("Adding record " + str(i))
@@ -65,6 +67,7 @@ def read_charger_data():
     csv_register = open(charger_register,"r")
     reader = csv.DictReader(csv_register)
     charger_id = 0
+    charger_types = []
 
     for row in reader:
         if row['town'].isalpha and (float(row['latitude']) > 50.0):
@@ -78,12 +81,24 @@ def read_charger_data():
                                     row['postcode'], 
                                     row['chargeDeviceStatus'], 
                                     row['subscriptionRequired'],
-                                    row['parkingFeesFlag']))
+                                    row['parkingFeesFlag'],
+                                    row['connector1Type'],
+                                    row['connector1RatedOutputKW']))
+
+            type = row['connector1Type']
+
+            if type not in charger_types:
+                 charger_types.append(type)
+
         else:
             print("Invalid data:",row['name'], row['town'],row['latitude'], row['longitude'])
 
     csv_register.close()
     print("Last id: " + str(charger_id))
+
+    for type in charger_types:
+        print(type)
+
 
  
 """
